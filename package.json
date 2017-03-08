@@ -1,13 +1,15 @@
 {
-  "name": "temperature",
+  "name": "robotois-motors",
   "version": "1.0.0",
-  "description": "Node library to communicate to the Motors Module",
+  "description": "Node library to control the robotois motors component",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "motors"
+    "robotois-motors",
+    "motors",
+    "robotois"
   ],
   "author": "yovany@robotois.com",
   "license": "ISC",
