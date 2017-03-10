@@ -54,4 +54,8 @@ MotorsModule.prototype.backward = function drivePWM(motorNumber) {
   this.motors[motorNumber === 1 ? 'motor1PWM' : 'motor2PWM'](-50);
 };
 
+MotorsModule.prototype.release = function release() {
+  this.motors.release();
+};
+
 module.exports = MotorsModule;
