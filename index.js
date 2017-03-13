@@ -42,31 +42,8 @@ MotorsModule.prototype.drivePWM = function(leftPWM,rightPWM){
   this.motors.drivePWM(leftPWM,rightPWM);
 };
 
+MotorsModule.prototype.release = function(){
+  this.motors.release();
+};
+
 module.exports = MotorsModule;
-// var sleep = require('sleep');
-//
-// var motors = MotorsModule();
-//
-// motors.LeftMotorPWM(200);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(400);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(600);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(400);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(200);
-// sleep.sleep(2);
-// motors.LeftMotorStop();
-// sleep.sleep(2);
-// motors.LeftMotorPWM(-200);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(-400);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(-600);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(-400);
-// sleep.sleep(2);
-// motors.LeftMotorPWM(-200);
-// sleep.sleep(2);
-// motors.LeftMotorStop();
