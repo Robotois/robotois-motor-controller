@@ -1,26 +1,28 @@
-var _motors = require('../index.js'),
-  motors = new _motors();
+const Motors = require('../index.js');
 
-var pwm = -50,sum = 5;
+const motors = new Motors();
 
-setInterval(()=> {
-  motors.motorsPWM(pwm,pwm);
+let pwm = -50;
+let sum = 5;
 
-  if(pwm == 50){
+setInterval(() => {
+  motors.motorsPWM(pwm, pwm);
+
+  if (pwm === 50) {
     sum = -5;
   }
 
-  if(pwm == -50){
+  if (pwm === -50) {
     sum = 5;
   }
 
   pwm += sum;
-},1000);
+}, 1000);
 
-  process.on('SIGTERM', function () {
-    process.exit();
-  });
+process.on('SIGTERM', () => {
+  process.exit();
+});
 
-  process.on('SIGINT', function () {
-    process.exit();
-  });
+process.on('SIGINT', () => {
+  process.exit();
+});
