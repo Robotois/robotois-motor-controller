@@ -46,11 +46,11 @@ MotorsModule.prototype.drivePWM = function drivePWM(leftPWM, rightPWM) {
   this.motors.drivePWM(leftPWM, rightPWM);
 };
 
-MotorsModule.prototype.forward = function drivePWM(motorNumber) {
+MotorsModule.prototype.forward = function forward(motorNumber) {
   this.motors[motorNumber === 1 ? 'motor1PWM' : 'motor2PWM'](50);
 };
 
-MotorsModule.prototype.backward = function drivePWM(motorNumber) {
+MotorsModule.prototype.backward = function backward(motorNumber) {
   this.motors[motorNumber === 1 ? 'motor1PWM' : 'motor2PWM'](-50);
 };
 
