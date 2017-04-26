@@ -34,11 +34,3 @@ setInterval(() => {
 
   pwm2 += sum2;
 }, 1000);
-
-process.on('SIGTERM', () => {
-  process.exit();
-});
-
-process.on('SIGINT', () => {
-  process.exit();
-});

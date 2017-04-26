@@ -115,13 +115,14 @@ void MotorsWrapper::motor1PWM(const FunctionCallbackInfo<Value>& args){
   }
 
   float pwm = args[0]->NumberValue();
-  if(pwm > 100 or pwm < -100){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong PWM value for motor1...")));
-  }
+
+  // if(pwm > 100 or pwm < -100){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong PWM value for motor1...")));
+  // }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motor1PWM((int16_t)(pwm*10)); // The PWM range is (-1000)-1000 in the Motor Module
+  temp_obj->motors->motor1PWM(pwm); // The PWM range is (-1000)-1000 in the Motor Module
 }
 
 void MotorsWrapper::motor1Control(const FunctionCallbackInfo<Value>& args){
@@ -151,13 +152,14 @@ void MotorsWrapper::motor2PWM(const FunctionCallbackInfo<Value>& args){
   }
 
   float pwm = args[0]->NumberValue();
-  if(pwm > 100 or pwm < -100){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong PWM value for motor1...")));
-  }
+
+  // if(pwm > 100 or pwm < -100){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong PWM value for motor1...")));
+  // }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motor2PWM((int16_t)(pwm*10)); // The PWM range is (-1000)-1000 in the Motor Module
+  temp_obj->motors->motor2PWM(pwm); // The PWM range is (-1000)-1000 in the Motor Module
 }
 
 void MotorsWrapper::motor2Control(const FunctionCallbackInfo<Value>& args){
@@ -206,13 +208,13 @@ void MotorsWrapper::motorsPWM(const FunctionCallbackInfo<Value>& args){
   float pwm1 = args[0]->NumberValue();
   float pwm2 = args[1]->NumberValue();
 
-  if(pwm1 > 100 or pwm1 < -100 or pwm2 > 100 or pwm2 < -100){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong PWM value for motors...")));
-  }
+  // if(pwm1 > 100 or pwm1 < -100 or pwm2 > 100 or pwm2 < -100){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong PWM value for motors...")));
+  // }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motorsPWM((int16_t)(pwm1*10),(int16_t)(pwm2*10));
+  temp_obj->motors->motorsPWM(pwm1,pwm2);
 }
 void MotorsWrapper::drivePWM(const FunctionCallbackInfo<Value>& args){
   Isolate* isolate = Isolate::GetCurrent();
@@ -227,11 +229,11 @@ void MotorsWrapper::drivePWM(const FunctionCallbackInfo<Value>& args){
   float left_pwm = args[0]->NumberValue(),
     right_pwm = args[1]->NumberValue();
 
-  if(left_pwm > 100 or left_pwm < -100 or right_pwm > 100 or right_pwm < -100){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong PWM value for motors...")));
-  }
+  // if(left_pwm > 100 or left_pwm < -100 or right_pwm > 100 or right_pwm < -100){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong PWM value for motors...")));
+  // }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->drivePWM((int16_t)(left_pwm*10),(int16_t)(right_pwm*10));
+  temp_obj->motors->drivePWM(left_pwm,right_pwm);
 }

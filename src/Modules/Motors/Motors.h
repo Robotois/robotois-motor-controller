@@ -9,12 +9,15 @@
 #define	MOTORS_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define MOTORS_MOTOR1_CONN 0x01
 #define MOTORS_MOTOR2_CONN 0x02
 #define MOTORS_CLOCKWISE 0x02
 #define MOTORS_COUNTER_CLOCKWISE 0x01
 #define MOTORS_STOP 0x00
+#define MOTORS_MAX_USER_SPEED (int16_t)100
+#define MOTORS_MAX_SPEED (int16_t)1000
 
 // --- Function Registers
 #define MOTORS_M1_CONTROL 0x00 // Register for motor 1 control
@@ -40,42 +43,22 @@ public:
     void motor2Control(uint8_t control);
     void motorsControl(uint8_t m1Control,uint8_t m2Control);
 
-    void motor1PWM(int16_t pwm);
-    void motor2PWM(int16_t pwm);
-    void motorsPWM(int16_t m1PWM, int16_t m2PWM);
+    void motor1PWM(float pwm);
+    void motor2PWM(float pwm);
+    void motorsPWM(float m1PWM, float m2PWM);
 
-    void drivePWM(int16_t m1PWM, int16_t m2PWM);
+    void drivePWM(float m1PWM, float m2PWM);
 
-//    void motorsSetup25D();
-//    void motor1Setup(float gearBox);
-//    void motor1Speed(int16_t rpm);
-//    void motor2Setup(float gearBox);
-
-//    void motor2Speed(int16_t rpm);   
-//    void motorsPWM(float motor1PWM, float mbPWM);
-//    void motorsSpeed(int16_t motor1Speed, int16_t mbSpeed);
-//    void driveSpeeds(int16_t motor1Speed,int16_t mbSpeed);
-//    void GetEncoderTicks(long *LeftEncodetTicks, long *RightEncoderTicks);
-//    void ResetEncoderCounters();
-
-//    void motor1BasicTest();
-//    void motorsBasicTest();
-//    void motorsBasicSpeedTest();
-//    void motor1FullSpeedTest();
-//    void motor1PIDResponse();
-//
-//    void mbBasicTest();
-//    void mbFullSpeedTest();
-//    void mbPIDResponse();
-//
-    void configPause();
     void release();
 private:
     uint8_t leftMotor;
     uint8_t rightMotor;
-//    int16_t motor1PWM, motor2PWM;
+    // The final integer value for PWM, this is the value that goes to the Motor
+    // Module.
+    int16_t realMotor1PWM, realMotor2PWM;
     
-    void constrain(int16_t *value,int16_t min, int16_t max);
+    int16_t constrainPWM(float value);
+    int16_t constrain(int16_t value, int16_t min, int16_t max);
     void bcm_init();
     void bcm_end();
 
