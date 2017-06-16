@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "MotorsModule",
-      "sources": [ "MotorsModule.cpp","MotorsWrapper.cpp",
+      "sources": [ "src/Wrapper/MotorsModule.cpp","src/Wrapper/MotorsWrapper.cpp",
       "src/Modules/Motors/Motors.cpp",
       "src/Libraries/Timer/AccurateTiming.cpp"
       ],

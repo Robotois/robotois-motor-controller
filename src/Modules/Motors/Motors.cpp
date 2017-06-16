@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   Motors.cpp
  * Author: yova
- * 
+ *
  * Created on 26 de enero de 2016, 06:15 PM
  */
 
@@ -12,9 +12,8 @@
 #include <stdlib.h>
 #include <cmath>
 #include "Motors.h"
-#include "../../Libraries/Timer/AccurateTiming.h"
+// #include "../../Libraries/Timer/AccurateTiming.h"
 #include <bcm2835.h>
-
 
 using namespace std;
 
@@ -25,10 +24,10 @@ Motors::Motors(uint8_t _add) {
     }
     slave_address = 0x10 | _add; // - Direccion por default
     bcm_init();
-    
+
     leftMotor = MOTORS_MOTOR2_CONN;
     rightMotor = MOTORS_MOTOR1_CONN;
-    
+
     motorsControl(MOTORS_STOP,MOTORS_STOP);
 }
 
@@ -65,7 +64,7 @@ void Motors::motor1Control(uint8_t control){
  */
 void Motors::motor1PWM(float pwm){
     selectModule();
-    
+
     realMotor1PWM = constrainPWM(pwm);
 
     wBuf[0] = MOTORS_M1_PWM;
@@ -93,9 +92,9 @@ void Motors::motor2Control(uint8_t control){
  */
 void Motors::motor2PWM(float pwm){
     selectModule();
-    
+
     realMotor2PWM = constrainPWM(pwm);
-    
+
     wBuf[0] = MOTORS_M2_PWM;
     wBuf[1] = (uint8_t)realMotor2PWM;
     wBuf[2] = (uint8_t)(realMotor2PWM >> 8);
@@ -132,7 +131,7 @@ void Motors::motorsPWM(float m1PWM, float m2PWM){
  * @param mbPWM
  */
 void Motors::drivePWM(float _leftPWM, float _rightPWM){
-    // We stablish a negative relationship with the PWM of the LEFT motor, this way 
+    // We stablish a negative relationship with the PWM of the LEFT motor, this way
     // we obtain a proper behavior for a robot:
     // - Positive PWM => forward motion (CCW)
     // - negative PWM => backward motion (CW)
@@ -143,12 +142,8 @@ void Motors::drivePWM(float _leftPWM, float _rightPWM){
             motorsPWM(_rightPWM,-_leftPWM);
         }else
             printf("MotorModule Error!!... Wrong motor configuration\n");
-    }            
+    }
 }
-
-//void Motors::configPause(){
-//    uDelay(20);    
-//}
 
 int16_t Motors::constrainPWM(float value){
     int16_t roundedValue = (int16_t)std::round(value*10.0f);
@@ -160,11 +155,11 @@ int16_t Motors::constrain(int16_t value, int16_t min, int16_t max){
     if(value > max){
         return max;
     }
-    
+
     if(value < min){
         return min;
     }
-    
+
     return value;
 }
 
@@ -177,7 +172,7 @@ void Motors::bcm_init(){
         printf("BCM2835 Error!!...\n");
         exit(1);
     }
-    
+
     bcm2835_i2c_begin();
 
     bcm2835_i2c_setClockDivider(clk_div);
@@ -185,7 +180,7 @@ void Motors::bcm_init(){
 
 void Motors::bcm_end(){
     bcm2835_i2c_end();
-    bcm2835_close();    
+    bcm2835_close();
 }
 
 void Motors::release(){
