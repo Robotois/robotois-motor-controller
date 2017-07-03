@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <cmath>
 #include "Motors.h"
-// #include "../../Libraries/Timer/AccurateTiming.h"
 #include <bcm2835.h>
 
 using namespace std;
@@ -130,19 +129,24 @@ void Motors::motorsPWM(float m1PWM, float m2PWM){
  * @param maPWM
  * @param mbPWM
  */
-void Motors::drivePWM(float _leftPWM, float _rightPWM){
+void Motors::drivePWM(float m1PWM, float m2PWM){
     // We stablish a negative relationship with the PWM of the LEFT motor, this way
     // we obtain a proper behavior for a robot:
     // - Positive PWM => forward motion (CCW)
     // - negative PWM => backward motion (CW)
-    if(leftMotor == MOTORS_MOTOR1_CONN and rightMotor == MOTORS_MOTOR2_CONN){
-        motorsPWM(-_leftPWM, _rightPWM);
-    }else{
-        if(leftMotor == MOTORS_MOTOR2_CONN and rightMotor == MOTORS_MOTOR1_CONN){
-            motorsPWM(_rightPWM,-_leftPWM);
-        }else
-            printf("MotorModule Error!!... Wrong motor configuration\n");
-    }
+//    realMotor1PWM = constrainPWM(m1PWM);
+//    realMotor2PWM = constrainPWM(m2PWM);
+  
+    motorsPWM(-m1PWM, m2PWM);
+
+//    if(leftMotor == MOTORS_MOTOR1_CONN and rightMotor == MOTORS_MOTOR2_CONN){
+//        motorsPWM(-realMotor1PWM, realMotor2PWM);
+//    }else{
+//        if(leftMotor == MOTORS_MOTOR2_CONN and rightMotor == MOTORS_MOTOR1_CONN){
+//            motorsPWM(realMotor1PWM,-realMotor2PWM);
+//        }else
+//            printf("MotorModule Error!!... Wrong motor configuration\n");
+//    }
 }
 
 int16_t Motors::constrainPWM(float value){

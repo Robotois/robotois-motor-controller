@@ -3,7 +3,7 @@
 
 #include <node.h>
 #include <node_object_wrap.h>
-#include "../Modules/Motors/Motors.h"
+#include "../Motors.h"
 
 class MotorsWrapper : public node::ObjectWrap {
 public:
