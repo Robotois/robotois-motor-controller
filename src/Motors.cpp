@@ -5,12 +5,12 @@
  * Created on 26 de enero de 2016, 06:15 PM
  */
 
-#include <unistd.h>
 #include <iostream>
-#include <fstream>
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdint>
 #include <cmath>
+#include <thread>
+#include <chrono>
+
 #include "Motors.h"
 #include <bcm2835.h>
 
@@ -53,7 +53,7 @@ void Motors::motor1Control(uint8_t control){
     selectModule();
     wBuf[0] = MOTORS_M1_CONTROL; // - Direccion del registro
     wBuf[1] = control; // - Contenido del registro
-    bcm2835_i2c_write(wBuf, 2);
+    i2cWrite(2);
 }
 
 /**
@@ -70,7 +70,7 @@ void Motors::motor1PWM(float pwm){
     wBuf[1] = (uint8_t)realMotor1PWM;
     wBuf[2] = (uint8_t)(realMotor1PWM >> 8);
 
-    bcm2835_i2c_write(wBuf, 3);
+    i2cWrite(3);
 }
 
 /**
@@ -81,7 +81,7 @@ void Motors::motor2Control(uint8_t control){
     selectModule();
     wBuf[0] = MOTORS_M2_CONTROL; // - Direccion del registro
     wBuf[1] = control; // - Contenido del registro
-    bcm2835_i2c_write(wBuf, 2);
+    i2cWrite(2);
 }
 
 /**
@@ -98,7 +98,7 @@ void Motors::motor2PWM(float pwm){
     wBuf[1] = (uint8_t)realMotor2PWM;
     wBuf[2] = (uint8_t)(realMotor2PWM >> 8);
 
-    bcm2835_i2c_write(wBuf, 3);
+    i2cWrite(3);
 }
 
 void Motors::motorsControl(uint8_t m1Control, uint8_t m2Control){
@@ -106,7 +106,7 @@ void Motors::motorsControl(uint8_t m1Control, uint8_t m2Control){
     wBuf[0] = MOTORS_M1_CONTROL; // - Direccion del registro
     wBuf[1] = m1Control; // - Contenido del registro
     wBuf[2] = m2Control; // - Contenido del registro
-    bcm2835_i2c_write(wBuf,3);
+    i2cWrite(3);
 }
 
 void Motors::motorsPWM(float m1PWM, float m2PWM){
@@ -121,7 +121,7 @@ void Motors::motorsPWM(float m1PWM, float m2PWM){
     wBuf[3] = (uint8_t)(realMotor2PWM);
     wBuf[4] = (uint8_t)(realMotor2PWM >> 8);
 
-    bcm2835_i2c_write(wBuf, 5);
+    i2cWrite(5);
 }
 
 /**
@@ -147,6 +147,15 @@ void Motors::drivePWM(float m1PWM, float m2PWM){
 //        }else
 //            printf("MotorModule Error!!... Wrong motor configuration\n");
 //    }
+}
+
+void Motors::i2cWrite(uint8_t byteCount){
+    bcm2835_i2c_write(wBuf, byteCount);
+    pause();
+}
+
+void Motors::pause(){
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
 int16_t Motors::constrainPWM(float value){

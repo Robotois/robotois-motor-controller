@@ -49,6 +49,8 @@ public:
 
     void drivePWM(float m1PWM, float m2PWM);
 
+    void i2cWrite(uint8_t byteCount);
+
     void release();
 private:
     uint8_t leftMotor;
@@ -61,6 +63,8 @@ private:
     int16_t constrain(int16_t value, int16_t min, int16_t max);
     void bcm_init();
     void bcm_end();
+    
+    void pause();
 
 };
 
