@@ -47,11 +47,9 @@ void MotorDriver::motor1PWM(int16_t pwm){
   int16_t realPWM = pwmRatio * pwm;
   if (realPWM < 0) { // - Negative PWM => Counterclockwise
     motor1CounterClockwise();
-    // analogWrite(MOTOR1_PWM_PIN, (uint16_t)(-pwm));
       OCR1A = (uint16_t)(-realPWM);
   } else {
     motor1Clockwise();
-    // analogWrite(MOTOR1_PWM_PIN, (uint16_t) pwm);
     OCR1A = (uint16_t) realPWM;
   }
 }
