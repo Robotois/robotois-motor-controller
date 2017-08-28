@@ -1,4 +1,4 @@
-const Motors = require('../index.js');
+const Motors = require('../');
 
 const motors = new Motors();
 
