@@ -1,6 +1,6 @@
 {
   "name": "robotois-motor-controller",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "Node library to control the robotois motors component",
   "main": "src/index.js",
   "scripts": {

@@ -36,11 +36,14 @@ MotorController.prototype.motor2Stop = function motor2Stop() {
   this.motors.motor2Control(this.stop);
 };
 
-MotorController.prototype.createMotor = function createMotor(motorNumber) {
-  return new Motor({
-    motorPWM: this.motorPWM(motorNumber),
-    motorStop: this.motorStop(motorNumber),
-  });
+MotorController.prototype.createMotor = function createMotor(motorNumber, mqttConfig) {
+  return new Motor(
+    {
+      motorPWM: this.motorPWM(motorNumber),
+      motorStop: this.motorStop(motorNumber),
+    },
+    mqttConfig,
+  );
 };
 
 MotorController.prototype.motorPWM = function motorPWM(motorNumber) {

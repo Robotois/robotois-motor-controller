@@ -1,14 +1,30 @@
-function motor(motorFunctions) {
-  this.motorPWM = motorFunctions.motorPWM;
-  this.motorStop = motorFunctions.motorStop;
+function Motor(motorSettings, mqttConfig) {
+  this.pwm = motorSettings.motorPWM;
+  this.stop = motorSettings.motorStop;
+  this.prevSpeed = 1000;
+
+  if (mqttConfig) {
+    this.mqttClient = mqttConfig.mqttClient;
+    this.myTopic = `motors/motor${mqttConfig.instance}`;
+  }
 }
 
-motor.prototype.motorSpeed = function motorSpeed(speed) {
-  this.motorPWM(speed);
+Motor.prototype.motorPWM = function motorSpeed(speed) {
+  if (this.prevSpeed !== speed) {
+    this.pwm(speed);
+    if (this.mqttClient) {
+      this.mqttClient.publish(this.myTopic, speed.toString());
+      this.prevSpeed = speed;
+    }
+  }
 };
 
-motor.prototype.motorStop = function motorStop() {
-  this.motorStop();
+Motor.prototype.motorStop = function motorStop() {
+  this.stop();
+  if (this.mqttClient) {
+    this.mqttClient.publish(this.myTopic, '0');
+    this.prevSpeed = 0;
+  }
 };
 
-module.exports = motor;
+module.exports = Motor;
