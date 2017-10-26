@@ -1,6 +1,6 @@
 {
   "name": "robotois-motor-controller",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node library to control the robotois motors component",
   "main": "src/index.js",
   "scripts": {
@@ -20,6 +20,11 @@
       "url": "http://armando.mx/"
     }
   ],
+  "homepage": "https://github.com/Robotois/robotois-motor-controller",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Robotois/robotois-motor-controller.git"
+  },
   "license": "ISC",
   "dependencies": {
     "bindings": "^1.2.1"
