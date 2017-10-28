@@ -9,13 +9,17 @@ function Motor(motorSettings, mqttConfig) {
   }
 }
 
+Motor.prototype.publishNow = function publishNow() {
+  this.mqttClient.publish(this.myTopic, this.prevSpeed.toString());
+};
+
 Motor.prototype.motorPWM = function motorSpeed(speed) {
   if (this.prevSpeed !== speed) {
     this.pwm(speed);
     if (this.mqttClient) {
       this.mqttClient.publish(this.myTopic, speed.toString());
-      this.prevSpeed = speed;
     }
+    this.prevSpeed = speed;
   }
 };
 
@@ -23,8 +27,8 @@ Motor.prototype.motorStop = function motorStop() {
   this.stop();
   if (this.mqttClient) {
     this.mqttClient.publish(this.myTopic, '0');
-    this.prevSpeed = 0;
   }
+  this.prevSpeed = 0;
 };
 
 module.exports = Motor;
