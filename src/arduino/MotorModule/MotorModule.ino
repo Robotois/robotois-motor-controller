@@ -1,24 +1,26 @@
 #include <Arduino.h>
 #include "MotorDriver.h"
+#include "frame_validation.h"
 #include <Wire.h>
 
 #define SLAVE_ADDRESS 0x10
-#define REG_MAP_SIZE 0x20
-#define MAX_BYTES 0x10 // Max of 10 bytes
-
-// #define SERIAL_LOG
+// #define REG_MAP_SIZE 0x20
+#define MAX_BYTES 10 // Max of 10 bytes
+#define frameTail1 ';'
+#define frameTail2 '\n'
 
 uint8_t receivedBytes[MAX_BYTES];
-// uint8_t registerMap[REG_MAP_SIZE];
+uint8_t response[MAX_BYTES]; // CRC16 + Tail
+bool statusCheck = false;
+uint8_t frameSize = 0;
 MotorDriver motors;
 
-// int outValue = 0;
 String serialLog;
 
 void setup() {
   // #ifdef SERIAL_LOG
-  //   Serial.begin(115200);
-  //   Serial.println("Motor Module logs:");
+    // Serial.begin(115200);
+    // Serial.println("Motor Module logs:");
   // #endif
   motors.begin();
 
@@ -26,10 +28,14 @@ void setup() {
   // A2 is LOW, if the jumper is placed in the two pin connector then the value
   // for A2 is HIGH, this means that the address for the current module will be
   // 0x11
-  // Wire.setClock(400000);
   Wire.begin( SLAVE_ADDRESS | digitalRead(A2) );
+  // Wire.setClock(100000);
+  pinMode(13, OUTPUT);
 
   Wire.onReceive(receiveHandler);
+  Wire.onRequest(statusRequest);
+  response[2] = frameTail1;
+  response[3] = frameTail2;
 }
 
 void loop() {
@@ -45,45 +51,72 @@ void loop() {
  * @param byteCount
  */
 void receiveHandler(int byteCount) {
-  // #ifdef SERIAL_LOG
-  //   serialLog = "I2C["+String(byteCount)+"]: ";
-  // #endif
-
+  if (byteCount < 4) {
+    receivedBytes[0] = Wire.read();
+    // Serial.println("I2C["+String(byteCount)+"]: " + String(receivedBytes[0], HEX));
+    if (receivedBytes[0] == 0x10) {
+      statusCheck = true;
+    }
+    return;
+  }
+  frameSize = 0;
+  // serialLog = "I2C["+String(byteCount)+"]: ";
   for (uint8_t i = 0; i < byteCount; i++) {
-    if ( i < MAX_BYTES ) {
-      receivedBytes[i] = Wire.read();
-      // #ifdef SERIAL_LOG
-      //   serialLog += String(receivedBytes[i],HEX) + " => ";
-      // #endif
-    } else { // throw away the excess bytes
-      Wire.read();
+    receivedBytes[i] = Wire.read();
+    // serialLog += "-" + String(receivedBytes[i],HEX);
+    if (i > 4 && receivedBytes[i] == frameTail2 && receivedBytes[i-1] == frameTail1) {
+			frameSize = i - 1;
     }
   }
-
+  // Serial.println(serialLog + " Frame Size:" + frameSize);
+  // Serial.println(serialLog);
+  if (frameSize == 0) {
+    response[0] = 0;
+    response[1] = 0;
+    // Wire.write(response, 4);
+    return;
+  }
+  uint16_t crc = validFrame(receivedBytes, frameSize);
+  // Serial.println("CRC: " + String(crc, HEX));
+  response[0] = (uint8_t) (crc >> 8);
+  response[1] = (uint8_t) (crc & 0xFF);
+  // Wire.write(response, 4);
+  if (crc == 0) {
+    return;
+  }
   // #ifdef SERIAL_LOG
-  //   Serial.println(serialLog);
   // #endif
 
   // Function mapping, we are progressively increasing the register address on each
   // received data, with this we will have better control of the function to call
-  uint8_t regAdd = receivedBytes[0];
-  for (size_t i = 1; i < byteCount; i++) {
-    switch (regAdd) {
-      case 0x00: // Control function for motor1
+  uint8_t functionAdd = receivedBytes[0];
+  for (size_t i = 1; i < (frameSize - 2); i++) {
+    switch (functionAdd) {
+      case 0x01: // Control function for motor1
         motors.motor1Control(receivedBytes[i]);
         break;
-      case 0x01:
+      case 0x02:
         motors.motor2Control(receivedBytes[i]);
         break;
-      // case 0x02: // Motor1 PWM[lower byte]
-      case 0x03: // Motor1 PWM[upper byte], the pwm will be set only if the two bytes were received
+      // case 0x03: // Motor1 PWM[lower byte]
+      case 0x04: // Motor1 PWM[upper byte], the pwm will be set only if the two bytes were received
         motors.motor1PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
         break;
-      // case 0x04: // Motor2 PWM[lower byte]
-      case 0x05: // Motor2 PWM[upper byte], the pwm will be set only if the two bytes were received
+      // case 0x05: // Motor2 PWM[lower byte]
+      case 0x06: // Motor2 PWM[upper byte], the pwm will be set only if the two bytes were received
         motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
         break;
     }
-    regAdd++;
+    functionAdd++;
+  }
+}
+
+void statusRequest() {
+  if (statusCheck) {
+    // Serial.println("StatusRequest");
+    Wire.write(response, 2);
+    response[0] = 0;
+    response[1] = 0;
+    statusCheck = false;
   }
 }

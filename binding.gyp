@@ -5,7 +5,7 @@
       "sources": [
         "src/wrapper/MotorsModule.cpp",
         "src/wrapper/MotorsWrapper.cpp",
-        "src/Motors.cpp"
+        "src/Motors/Motors.cpp"
       ],
       "libraries": ["-l bcm2835","-l rt"]
     }

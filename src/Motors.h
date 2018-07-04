@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   Motors.h
  * Author: yova
  *
@@ -29,16 +29,16 @@
 
 class Motors {
 public:
-    char rBuf[10]; // - Max length
-    char wBuf[10]; // - Max length
+    char rBuf[15]; // - Max length
+    char wBuf[15]; // - Max length
     uint8_t slave_address;
-        
+
     Motors(uint8_t _add = 0x00);
     Motors(const Motors& orig);
     virtual ~Motors();
-    
+
     void selectModule();
-    
+
     void motor1Control(uint8_t control);
     void motor2Control(uint8_t control);
     void motorsControl(uint8_t m1Control,uint8_t m2Control);
@@ -49,24 +49,26 @@ public:
 
     void drivePWM(float m1PWM, float m2PWM);
 
-    void i2cWrite(uint8_t byteCount);
+    // void i2cWrite(uint8_t byteCount);
 
     void release();
 private:
     uint8_t leftMotor;
     uint8_t rightMotor;
+    char ack[5];
+    char ackRes[5];
     // The final integer value for PWM, this is the value that goes to the Motor
     // Module.
     int16_t realMotor1PWM, realMotor2PWM;
-    
+
     int16_t constrainPWM(float value);
     int16_t constrain(int16_t value, int16_t min, int16_t max);
     void bcm_init();
     void bcm_end();
-    
+    void i2cWrite(uint8_t byteCount);
+
     void pause();
 
 };
 
 #endif	/* MOTORS_H */
-

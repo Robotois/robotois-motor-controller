@@ -109,20 +109,19 @@ void MotorsWrapper::motor1PWM(const FunctionCallbackInfo<Value>& args){
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 1){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
-  }
-
-  float pwm = args[0]->NumberValue();
-
-  // if(pwm > 100 or pwm < -100){
+  // if(_argc != 1){
   //   isolate->ThrowException(Exception::TypeError(
-  //   String::NewFromUtf8(isolate, "Wrong PWM value for motor1...")));
+  //   String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
   // }
 
+  float pwm = args[0]->NumberValue();
+  uint8_t force = 0;
+  if (_argc == 2) {
+    force = (uint8_t) args[1]->NumberValue();
+  }
+
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motor1PWM(pwm); // The PWM range is (-1000)-1000 in the Motor Module
+  temp_obj->motors->motor1PWM(pwm, force); // The PWM range is (-1000)-1000 in the Motor Module
 }
 
 void MotorsWrapper::motor1Control(const FunctionCallbackInfo<Value>& args){
@@ -130,15 +129,19 @@ void MotorsWrapper::motor1Control(const FunctionCallbackInfo<Value>& args){
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 1){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments...")));
-  }
+  // if(_argc != 1){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong arguments...")));
+  // }
 
   uint8_t control = (uint8_t) args[0]->NumberValue();
+  uint8_t force = 0;
+  if (_argc == 2) {
+    force = (uint8_t) args[1]->NumberValue();
+  }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motor1Control(control);
+  temp_obj->motors->motor1Control(control, force);
 }
 
 void MotorsWrapper::motor2PWM(const FunctionCallbackInfo<Value>& args){
@@ -146,20 +149,19 @@ void MotorsWrapper::motor2PWM(const FunctionCallbackInfo<Value>& args){
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 1){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
-  }
-
-  float pwm = args[0]->NumberValue();
-
-  // if(pwm > 100 or pwm < -100){
+  // if(_argc != 1){
   //   isolate->ThrowException(Exception::TypeError(
-  //   String::NewFromUtf8(isolate, "Wrong PWM value for motor1...")));
+  //   String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
   // }
 
+  float pwm = args[0]->NumberValue();
+  uint8_t force = 0;
+  if (_argc == 2) {
+    force = (uint8_t) args[1]->NumberValue();
+  }
+
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motor2PWM(pwm); // The PWM range is (-1000)-1000 in the Motor Module
+  temp_obj->motors->motor2PWM(pwm, force); // The PWM range is (-1000)-1000 in the Motor Module
 }
 
 void MotorsWrapper::motor2Control(const FunctionCallbackInfo<Value>& args){
@@ -167,15 +169,19 @@ void MotorsWrapper::motor2Control(const FunctionCallbackInfo<Value>& args){
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 1){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments...")));
-  }
+  // if(_argc != 1){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong arguments...")));
+  // }
 
   uint8_t control = (uint8_t) args[0]->NumberValue();
+  uint8_t force = 0;
+  if (_argc == 2) {
+    force = (uint8_t) args[1]->NumberValue();
+  }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motor2Control(control);
+  temp_obj->motors->motor2Control(control, force);
 }
 
 void MotorsWrapper::motorsControl(const FunctionCallbackInfo<Value>& args){
@@ -183,16 +189,20 @@ void MotorsWrapper::motorsControl(const FunctionCallbackInfo<Value>& args){
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 2){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments...")));
-  }
+  // if(_argc != 2){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong arguments...")));
+  // }
 
   uint8_t control1 = (uint8_t) args[0]->NumberValue();
   uint8_t control2 = (uint8_t) args[1]->NumberValue();
+  uint8_t force = 0;
+  if (_argc == 3) {
+    force = (uint8_t) args[2]->NumberValue();
+  }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motorsControl(control1,control2);
+  temp_obj->motors->motorsControl(control1, control2, force);
 }
 
 void MotorsWrapper::motorsPWM(const FunctionCallbackInfo<Value>& args){
@@ -200,40 +210,39 @@ void MotorsWrapper::motorsPWM(const FunctionCallbackInfo<Value>& args){
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 2){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
-  }
+  // if(_argc != 2){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
+  // }
 
   float pwm1 = args[0]->NumberValue();
   float pwm2 = args[1]->NumberValue();
-
-  // if(pwm1 > 100 or pwm1 < -100 or pwm2 > 100 or pwm2 < -100){
-  //   isolate->ThrowException(Exception::TypeError(
-  //   String::NewFromUtf8(isolate, "Wrong PWM value for motors...")));
-  // }
+  uint8_t force = 0;
+  if (_argc == 3) {
+    force = (uint8_t) args[2]->NumberValue();
+  }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->motorsPWM(pwm1,pwm2);
+  temp_obj->motors->motorsPWM(pwm1, pwm2, force);
 }
+
 void MotorsWrapper::drivePWM(const FunctionCallbackInfo<Value>& args){
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 
   uint8_t _argc = args.Length();
-  if(_argc != 2){
-    isolate->ThrowException(Exception::TypeError(
-    String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
-  }
+  // if(_argc != 2){
+  //   isolate->ThrowException(Exception::TypeError(
+  //   String::NewFromUtf8(isolate, "Wrong arguments for Motor Module...")));
+  // }
 
   float left_pwm = args[0]->NumberValue(),
     right_pwm = args[1]->NumberValue();
-
-  // if(left_pwm > 100 or left_pwm < -100 or right_pwm > 100 or right_pwm < -100){
-  //   isolate->ThrowException(Exception::TypeError(
-  //   String::NewFromUtf8(isolate, "Wrong PWM value for motors...")));
-  // }
+  uint8_t force = 0;
+    if (_argc == 3) {
+      force = (uint8_t) args[2]->NumberValue();
+    }
 
   MotorsWrapper* temp_obj = ObjectWrap::Unwrap<MotorsWrapper>(args.Holder());
-  temp_obj->motors->drivePWM(left_pwm,right_pwm);
+  temp_obj->motors->drivePWM(left_pwm, right_pwm, force);
 }
