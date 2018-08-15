@@ -7,7 +7,7 @@
         "src/wrapper/MotorsWrapper.cpp",
         "src/Motors/Motors.cpp"
       ],
-      "libraries": ["-l bcm2835","-l rt"]
+      "libraries": ["-l bcm2835"]
     }
   ]
 }

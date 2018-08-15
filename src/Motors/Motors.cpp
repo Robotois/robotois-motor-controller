@@ -36,8 +36,8 @@ Motors::Motors(uint8_t _add) {
     bcm_init();
 //    leftMotor = MOTORS_MOTOR2_CONN;
 //    rightMotor = MOTORS_MOTOR1_CONN;
-
-    motorsControl(MOTORS_STOP,MOTORS_STOP);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    motorsControl(MOTORS_STOP,MOTORS_STOP, 1);
 }
 
 Motors::Motors(const Motors& orig) {
@@ -152,8 +152,8 @@ void Motors::i2cWrite(uint8_t byteCount, uint8_t force) {
     crc = getCRC16((uint8_t *)wBuf, byteCount);
     wBuf[byteCount] = (uint8_t) (crc >> 8);
     wBuf[byteCount+1] = (uint8_t) (crc & 0xFF);
-    wBuf[byteCount+2] = frameTail1;
-    wBuf[byteCount+3] = frameTail2;
+    wBuf[byteCount+2] = frameTail;
+    wBuf[byteCount+3] = frameTail;
 
 //    printf("Data Frame: ");
 //    for(uint8_t i = 0; i < byteCount+4; i++) {
@@ -164,16 +164,18 @@ void Motors::i2cWrite(uint8_t byteCount, uint8_t force) {
     selectModule();
     bcm2835_i2c_write(wBuf, byteCount+4);
     pause();
-    ackReg = MOTORS_STATUS;
-    uint8_t res = bcm2835_i2c_write_read_rs(&ackReg, 1, rBuf, 4);
+    wBuf[0] = MOTORS_STATUS;
+    selectModule();
+    uint8_t res = bcm2835_i2c_write_read_rs(wBuf, 1, rBuf, 2);
 
 //    printf("Response Frame: [%x] ", res);
-//    for(uint8_t i = 0; i < 4; i++) {
+//    for(uint8_t i = 0; i < 2; i++) {
 //        printf("-%x", rBuf[i]);
 //    }
-//    printf("\n");    
+//    printf("\n");
 
     ackCRC = (uint16_t)(rBuf[0] << 8) | rBuf[1];
+//    printf(": %x\n", ackCRC);
     if (force == 1 && res != 0x00 && ackCRC != crc) {
         printf("[Motor Module] => I2C response error\n");
         pause();
@@ -185,7 +187,8 @@ void Motors::i2cWrite(uint8_t byteCount, uint8_t force) {
 }
 
 void Motors::pause(){
-    std::this_thread::sleep_for(std::chrono::microseconds(250));
+    std::this_thread::sleep_for(std::chrono::microseconds(3000));
+//    std::this_thread::sleep_for(std::chrono::microseconds(500));
 }
 
 int16_t Motors::constrainPWM(float value){
@@ -290,5 +293,5 @@ uint16_t Motors::validFrame(const uint8_t* received, uint8_t length) {
     if (frameCRC == computedCRC) {
             return computedCRC;
     }
-    return 0;    
+    return 0;
 }

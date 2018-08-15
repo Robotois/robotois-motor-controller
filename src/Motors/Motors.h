@@ -37,8 +37,7 @@
 #define CRC16 0x8005
 #define masterHeader 'M'
 #define slaveHeader 'M'
-#define frameTail1 ';'
-#define frameTail2 '\n'
+#define frameTail 0xFF
 
 class Motors {
 public:
