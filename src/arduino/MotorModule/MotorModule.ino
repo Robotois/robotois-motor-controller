@@ -6,8 +6,7 @@
 #define SLAVE_ADDRESS 0x10
 // #define REG_MAP_SIZE 0x20
 #define MAX_BYTES 10 // Max of 10 bytes
-#define frameTail1 ';'
-#define frameTail2 '\n'
+#define frameTail 0xFF
 
 uint8_t receivedBytes[MAX_BYTES];
 uint8_t response[MAX_BYTES]; // CRC16 + Tail
@@ -15,15 +14,13 @@ bool statusCheck = false;
 uint8_t frameSize = 0;
 MotorDriver motors;
 
-String serialLog;
+// String serialLog;
 
 void setup() {
-  // #ifdef SERIAL_LOG
-    // Serial.begin(115200);
-    // Serial.println("Motor Module logs:");
-  // #endif
-  motors.begin();
+  // Serial.begin(115200);
+  // Serial.println("Motor Module logs:");
 
+  motors.begin();
   // Using pin A2 you can connect up to two motor modules, the default value for
   // A2 is LOW, if the jumper is placed in the two pin connector then the value
   // for A2 is HIGH, this means that the address for the current module will be
@@ -34,8 +31,8 @@ void setup() {
 
   Wire.onReceive(receiveHandler);
   Wire.onRequest(statusRequest);
-  response[2] = frameTail1;
-  response[3] = frameTail2;
+  response[2] = frameTail;
+  response[3] = frameTail;
 }
 
 void loop() {
@@ -62,10 +59,19 @@ void receiveHandler(int byteCount) {
   frameSize = 0;
   // serialLog = "I2C["+String(byteCount)+"]: ";
   for (uint8_t i = 0; i < byteCount; i++) {
-    receivedBytes[i] = Wire.read();
-    // serialLog += "-" + String(receivedBytes[i],HEX);
-    if (i > 4 && receivedBytes[i] == frameTail2 && receivedBytes[i-1] == frameTail1) {
-			frameSize = i - 1;
+    if(i < MAX_BYTES) {
+      receivedBytes[i] = Wire.read();
+      // serialLog += "-" + String(receivedBytes[i],HEX);
+      if (
+        i >= 4 &&
+        receivedBytes[i] == frameTail &&
+        receivedBytes[i-1] == frameTail &&
+        frameSize == 0
+      ) {
+        frameSize = i - 1;
+      }
+    } else {
+      Wire.read();
     }
   }
   // Serial.println(serialLog + " Frame Size:" + frameSize);
@@ -73,19 +79,15 @@ void receiveHandler(int byteCount) {
   if (frameSize == 0) {
     response[0] = 0;
     response[1] = 0;
-    // Wire.write(response, 4);
     return;
   }
   uint16_t crc = validFrame(receivedBytes, frameSize);
   // Serial.println("CRC: " + String(crc, HEX));
   response[0] = (uint8_t) (crc >> 8);
   response[1] = (uint8_t) (crc & 0xFF);
-  // Wire.write(response, 4);
   if (crc == 0) {
     return;
   }
-  // #ifdef SERIAL_LOG
-  // #endif
 
   // Function mapping, we are progressively increasing the register address on each
   // received data, with this we will have better control of the function to call
