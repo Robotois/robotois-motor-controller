@@ -44,6 +44,23 @@ MotorController.prototype.publishValue = function publishValue(motorNumber, valu
   this.client.publish(this.topic, JSON.stringify(message));
 };
 
+MotorController.prototype.publishMotors = function publishValue(pwm1, pwm2) {
+  if (!this.client) {
+    return;
+  }
+  // console.log('HERE!!');
+  const message = {
+    reported: {
+      motors: {
+        motor1: pwm1,
+        motor2: pwm2,
+      },
+    },
+  };
+
+  this.client.publish(this.topic, JSON.stringify(message));
+};
+
 MotorController.prototype.motor1PWM = function motor1PWM(m1PWM) {
   this.motors.motor1PWM(m1PWM, this.force);
   this.publishValue(1, m1PWM);
@@ -123,10 +140,12 @@ Multiple motors functions
  */
 MotorController.prototype.motorsPWM = function motorsPWM(m1PWM, m2PWM) {
   this.motors.motorsPWM(m1PWM, m2PWM, this.force);
+  this.publishMotors(m1PWM, m2PWM);
 };
 
 MotorController.prototype.motorsStop = function motorsStop() {
   this.motors.motorsControl(this.stop, this.stop, this.force);
+  this.publishMotors(0, 0);
 };
 
 MotorController.prototype.drivePWM = function drivePWM(leftPWM, rightPWM) {

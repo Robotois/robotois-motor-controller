@@ -5,25 +5,25 @@ const motorController = MController();
 const motor1 = motorController.motorCreator(1);
 // console.log(motor1);
 const motor2 = motorController.motorCreator(2);
-let pwm1 = -100;
-let sum1 = 10;
+let pwm1 = 75;
+let sum1 = -10;
 
 let pwm2 = -100;
 let sum2 = 10;
 
 setInterval(() => {
-  motor1.pwm(pwm1);
+  motorController.motor1PWM(pwm1);
 
-  if (pwm1 === 50) {
+  if (pwm1 === 75) {
     sum1 = -10;
   }
 
-  if (pwm1 === -50) {
+  if (pwm1 === -75) {
     sum1 = 10;
   }
 
   pwm1 += sum1;
-}, 500);
+}, 2000);
 
 // setInterval(() => {
 //   motor2.motorPWM(pwm2);
