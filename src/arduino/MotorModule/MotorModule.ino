@@ -2,6 +2,8 @@
 #include "MotorDriver.h"
 #include "frame_validation.h"
 #include <Wire.h>
+#include "PIDs.h"
+#include <avr/eeprom.h>
 
 #define SLAVE_ADDRESS 0x10
 // #define REG_MAP_SIZE 0x20
@@ -15,10 +17,26 @@ uint8_t frameSize = 0;
 MotorDriver motors;
 
 // String serialLog;
+String command;
+
+int pwm = 100, steps = 100;
 
 void setup() {
-  // Serial.begin(115200);
-  // Serial.println("Motor Module logs:");
+  Serial.begin(115200);
+  Serial.println("Motors Setup, to execute a function enter the request as follows \"#func,#param1,#param2\" and ENTER");
+  Serial.println("MAKE SURE you connect the motor using the proper pinout\n");
+  Serial.println("1: settings(maxRPM,kp,kd,ki) => maxRPM is maximum RPM output of your motor");
+  Serial.println("2: resetValues()");
+  Serial.println("3: setMotorSpeed(rpmSpeed)");
+  eeprom_read_block((void*)&settings, (void*)0, sizeof(settings));
+  Serial.println(
+    "Settings: \nRPM:" + String(settings.maxRPM, DEC) + "\n" +
+    "cpr:" + String(settings.cpr, DEC) + "\n" +
+    "gear:" + String(settings.gear, DEC) + "\n" +
+    "kp:" + String(settings.kp, DEC) + "\n" +
+    "kd:" + String(settings.kd, DEC) + "\n" +
+    "ki:" + String(settings.ki, DEC) + "\n"
+  );
 
   motors.begin();
   // Using pin A2 you can connect up to two motor modules, the default value for
@@ -26,17 +44,19 @@ void setup() {
   // for A2 is HIGH, this means that the address for the current module will be
   // 0x11
   Wire.begin( SLAVE_ADDRESS | digitalRead(A2) );
-  // Wire.setClock(100000);
   pinMode(13, OUTPUT);
 
   Wire.onReceive(receiveHandler);
   Wire.onRequest(statusRequest);
   response[2] = frameTail;
   response[3] = frameTail;
+  pidSetup(&motors);
+  // setMotorSpeed(150, 0);
 }
 
 void loop() {
-
+  // motors.motor1PWM(250);
+  pidControl();
 }
 
 /**
@@ -108,6 +128,14 @@ void receiveHandler(int byteCount) {
       case 0x06: // Motor2 PWM[upper byte], the pwm will be set only if the two bytes were received
         motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
         break;
+      // case 0x07: // Motor2 PWM[lower byte]
+      case 0x08: // Motor1 speed[upper byte], the pwm will be set only if the two bytes were received
+        motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
+        break;
+      // case 0x09: // Motor2 PWM[lower byte]
+      case 0x0A: // Motor2 PWM[upper byte], the pwm will be set only if the two bytes were received
+        motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
+        break;
     }
     functionAdd++;
   }
@@ -120,5 +148,31 @@ void statusRequest() {
     response[0] = 0;
     response[1] = 0;
     statusCheck = false;
+  }
+}
+
+void resetMemValues() {
+  settings.maxRPM = 300;
+  settings.cpr = 44;
+  settings.gear = 30;
+  settings.kp = 1;
+  settings.kd = 5;
+  settings.ki = 0.001;
+  eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
+  Serial.println("Success!");
+}
+
+void serialEvent() {
+  if (Serial.available()) {
+    command = Serial.readStringUntil('\n');
+    Serial.println("Input Params: " + command);
+    if (command == "2") {
+      resetMemValues();
+    }
+    if (command[0] == '3') {
+      int speed = command.substring(2).toInt();
+      Serial.println("Desired Speed: " + String(speed, DEC));
+      setMotorSpeed(speed, 0);
+    }
   }
 }

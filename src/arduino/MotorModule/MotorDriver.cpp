@@ -3,22 +3,19 @@
 MotorDriver::MotorDriver(){
 }
 
-void MotorDriver::begin(){
+void MotorDriver::begin() {
   // These pins are used to control the direction of rotation for the motors,
   // Clockwise, Counterclockwise and Stop
-  pinMode(MOTOR1_IN1, OUTPUT);
-  pinMode(MOTOR1_IN2, OUTPUT);
-  pinMode(MOTOR2_IN1, OUTPUT);
-  pinMode(MOTOR2_IN2, OUTPUT);
-  // Motors initially stopped
+  pinMode(MOTOR1_DIR, OUTPUT);
+  pinMode(MOTOR2_DIR, OUTPUT);
   motor1Stop();
   motor2Stop();
 
   // Initialization of the PWM pins and Timer 1 to manage PWM signal
-  pinMode(STBY_PIN, OUTPUT);
+  pinMode(DISABLE, OUTPUT);
   pinMode(MOTOR1_PWM_PIN, OUTPUT);
   pinMode(MOTOR2_PWM_PIN, OUTPUT);
-  digitalWrite(STBY_PIN, HIGH); // StandBy pin to High
+  digitalWrite(DISABLE, LOW); // StandBy pin to High
 
   // // - Non inverted mode, OC1A and OC1B as PWM output
 	// // - Fast Mode, top in ICR1
@@ -42,8 +39,20 @@ void MotorDriver::begin(){
 // PWM values in a range of (-1000) - 1000, with negative values the motors
 // rotate in Counterclockwise, with positive values the motors rotate Clockwise
 // and a PWM value of cero the PWM signal will be LOW
+void MotorDriver::motorPWM(int16_t pwm, uint8_t motorIdx) {
+  switch (motorIdx) {
+    case 0:
+      motor1PWM(pwm);
+      break;
+    case 1:
+      motor2PWM(pwm);
+      break;
+    default:
+      break;
+  }
+}
 
-void MotorDriver::motor1PWM(int16_t pwm){
+void MotorDriver::motor1PWM(int16_t pwm) {
   int16_t realPWM = pwmRatio * pwm;
   if (realPWM < 0) { // - Negative PWM => Counterclockwise
     motor1CounterClockwise();
@@ -54,7 +63,7 @@ void MotorDriver::motor1PWM(int16_t pwm){
   }
 }
 
-void MotorDriver::motor2PWM(int16_t pwm){
+void MotorDriver::motor2PWM(int16_t pwm) {
   int16_t realPWM = pwmRatio * pwm;
   if (realPWM < 0) { // - Negative PWM => Counterclockwise
     motor2CounterClockwise();
@@ -68,7 +77,6 @@ void MotorDriver::motor2PWM(int16_t pwm){
 /**********************
 BASIC CONTROL FUNCTIONS
  **********************/
-
 void MotorDriver::motor1Control(uint8_t control){
   switch (control) {
     case 0x00:
@@ -85,18 +93,15 @@ void MotorDriver::motor1Control(uint8_t control){
 }
 
 void MotorDriver::motor1Clockwise(){
-  digitalWrite(MOTOR1_IN1, LOW);
-  digitalWrite(MOTOR1_IN2, HIGH);
+  digitalWrite(MOTOR1_DIR, HIGH);
 }
 
 void MotorDriver::motor1CounterClockwise(){
-  digitalWrite(MOTOR1_IN1, HIGH);
-  digitalWrite(MOTOR1_IN2, LOW);
+  digitalWrite(MOTOR1_DIR, LOW);
 }
 
 void MotorDriver::motor1Stop(){
-  digitalWrite(MOTOR1_IN1, LOW);
-  digitalWrite(MOTOR1_IN2, LOW);
+  OCR1A = 0;
 }
 
 void MotorDriver::motor2Control(uint8_t control){
@@ -115,16 +120,13 @@ void MotorDriver::motor2Control(uint8_t control){
 }
 
 void MotorDriver::motor2Clockwise(){
-  digitalWrite(MOTOR2_IN1, LOW);
-  digitalWrite(MOTOR2_IN2, HIGH);
+  digitalWrite(MOTOR2_DIR, HIGH);
 }
 
 void MotorDriver::motor2CounterClockwise(){
-  digitalWrite(MOTOR2_IN1, HIGH);
-  digitalWrite(MOTOR2_IN2, LOW);
+  digitalWrite(MOTOR2_DIR, LOW);
 }
 
 void MotorDriver::motor2Stop(){
-  digitalWrite(MOTOR2_IN1, LOW);
-  digitalWrite(MOTOR2_IN2, LOW);
+  OCR1A = 0;
 }
