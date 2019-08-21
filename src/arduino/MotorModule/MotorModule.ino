@@ -122,19 +122,21 @@ void receiveHandler(int byteCount) {
         break;
       // case 0x03: // Motor1 PWM[lower byte]
       case 0x04: // Motor1 PWM[upper byte], the pwm will be set only if the two bytes were received
+        disablePid(0);
         motors.motor1PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
         break;
       // case 0x05: // Motor2 PWM[lower byte]
       case 0x06: // Motor2 PWM[upper byte], the pwm will be set only if the two bytes were received
+        disablePid(1);
         motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
         break;
       // case 0x07: // Motor2 PWM[lower byte]
       case 0x08: // Motor1 speed[upper byte], the pwm will be set only if the two bytes were received
-        motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
+        setMotorSpeed( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1], 0);
         break;
       // case 0x09: // Motor2 PWM[lower byte]
       case 0x0A: // Motor2 PWM[upper byte], the pwm will be set only if the two bytes were received
-        motors.motor2PWM( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1] );
+        setMotorSpeed( ((int16_t) (receivedBytes[i] << 8)) | receivedBytes[i-1], 1);
         break;
     }
     functionAdd++;
@@ -151,28 +153,50 @@ void statusRequest() {
   }
 }
 
-void resetMemValues() {
-  settings.maxRPM = 300;
-  settings.cpr = 44;
-  settings.gear = 30;
-  settings.kp = 1;
-  settings.kd = 5;
-  settings.ki = 0.001;
+void updateSettingValues(
+  int maxRPM,
+  int cpr,
+  int gear,
+  float kp,
+  float kd,
+  float ki
+) {
+  settings.maxRPM = maxRPM;
+  settings.cpr = cpr;
+  settings.gear = gear;
+  settings.kp = kp;
+  settings.kd = kd;
+  settings.ki = ki;
   eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-  Serial.println("Success!");
+  Serial.println("Settings Update => Success!");
+}
+
+void resetMemValues() {
+  updateSettingValues(
+    (int) 300,
+    (int) 44,
+    (int) 30,
+    (float) 1,
+    (float) 2,
+    (float) 0.001
+  );
 }
 
 void serialEvent() {
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
     Serial.println("Input Params: " + command);
-    if (command == "2") {
-      resetMemValues();
-    }
-    if (command[0] == '3') {
-      int speed = command.substring(2).toInt();
-      Serial.println("Desired Speed: " + String(speed, DEC));
-      setMotorSpeed(speed, 0);
+    switch (command[0]) {
+      case '2':
+        resetMemValues();
+        break;
+      case '3':
+        int speed = command.substring(2).toInt();
+        Serial.println("Desired Speed: " + String(speed, DEC));
+        setMotorSpeed(speed, 0);
+        break;
+      default:
+        break;
     }
   }
 }

@@ -38,6 +38,9 @@ int boundValue(int value, int min, int max) {
 const int lookUpTable[] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0};
 volatile int encCount[4] = {0, 0, 0, 0}, prevEncCount[4] = {0, 0, 0, 0};
 volatile uint8_t prevEnc[4] = {0, 0, 0, 0};
+bool pidEnable[2] = {false, false};
+uint8_t currentEnc1;
+uint8_t currentEnc2;
 
 void encThick(uint8_t currentEnc, uint8_t motorNumber) {
     uint8_t lookAdd = (prevEnc[motorNumber] <<2) | currentEnc;
@@ -46,13 +49,17 @@ void encThick(uint8_t currentEnc, uint8_t motorNumber) {
 }
 
 void encInterrupt() {
-  uint8_t currentEnc1 = digitalRead(encoderPins[0][0]) << 1 | digitalRead(encoderPins[0][1]);
-  uint8_t currentEnc2 = digitalRead(encoderPins[1][0]) << 1 | digitalRead(encoderPins[1][1]);
-  if (prevEnc[0] != currentEnc1) {
-    encThick(currentEnc1, 0);
+  if (pidEnable[0]) {
+    currentEnc1 = digitalRead(encoderPins[0][0]) << 1 | digitalRead(encoderPins[0][1]);
+    if (prevEnc[0] != currentEnc1) {
+      encThick(currentEnc1, 0);
+    }
   }
-  if (prevEnc[1] != currentEnc2) {
-    encThick(currentEnc2, 1);
+  if (pidEnable[1]) {
+    currentEnc2 = digitalRead(encoderPins[1][0]) << 1 | digitalRead(encoderPins[1][1]);
+    if (prevEnc[1] != currentEnc2) {
+      encThick(currentEnc2, 1);
+    }
   }
 }
 
@@ -90,7 +97,6 @@ ISR(TIMER2_COMPA_vect) {//timer1 interrupt 8kHz toggles pin 9
 
 uint8_t idx = 0;
 volatile int encTarget[2] = {0, 0};
-// float kp = 1, ki = 0.001, kd = 5;
 float controlPWM;
 float currentError, prevError[2] = {0, 0};
 float integral[2] = {0, 0};
@@ -104,31 +110,38 @@ void pidControl() {
   }
 
   for(idx = 0; idx < motorCount; idx++) {
-    currentError = encTarget[idx] - encCount[idx];
-    integral[idx] += currentError;
-    controlPWM = currentError * settings.kp +
-      integral[idx] * settings.ki +
-      (currentError - prevError[idx]) * settings.kd;
+    if (pidEnable[idx]) {
+      currentError = encTarget[idx] - encCount[idx];
+      integral[idx] += currentError;
+      controlPWM = currentError * settings.kp +
+        integral[idx] * settings.ki +
+        (currentError - prevError[idx]) * settings.kd;
 
-    currentPWM[idx] += 0.5*controlPWM;
-    currentPWM[idx] = boundValue(currentPWM[idx], -1000, 1000);
+      currentPWM[idx] += 0.5*controlPWM;
+      currentPWM[idx] = boundValue(currentPWM[idx], -1000, 1000);
 
-    prevError[idx] = currentError;
-    prevEncCount[idx] = encCount[idx];
-    // if (idx == 0) {
-    //   Serial.println("Count: " + String(encCount[idx], DEC));
-    // }
-    encCount[0] = 0;
-    prevPWM[idx] = currentPWM[idx];
-    motorsPtr->motorPWM(currentPWM[idx], idx);
+      prevError[idx] = currentError;
+      prevEncCount[idx] = encCount[idx];
+      // if (idx == 0) {
+      //   Serial.println("Count: " + String(encCount[idx], DEC));
+      // }
+      encCount[0] = 0;
+      prevPWM[idx] = currentPWM[idx];
+      motorsPtr->motorPWM(currentPWM[idx], idx);
+    }
   }
-
   pidFlag = 0;
 }
 
 void setMotorSpeed(int speed, uint8_t motorIdx) {
   int boundSpeed = boundValue(speed, -settings.maxRPM, settings.maxRPM);
   encTarget[motorIdx] = (int) (boundSpeed * speedRatio);
+  pidEnable[motorIdx] = true;
   Serial.println("EncTarget: " + String(encTarget[motorIdx], DEC));
+}
+
+void disablePid(uint8_t idx) {
+  pidEnable[idx] = false;
+  encCount[idx] = 0;
 }
 #endif // PIDS
