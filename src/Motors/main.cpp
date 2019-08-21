@@ -17,28 +17,50 @@
 #include "Motors.h"
 
 using namespace std;
+Motors *motorModule;
+
+void speedTest();
+void pwmTest();
 
 /*
  * 
  */
 int main(int argc, char** argv) {
-//    i2c_init();
+    motorModule = new Motors();
+    // speedTest();
+    pwmTest();
+    return 0;
+}
+
+void pwmTest() {
     float pwmValue = 0;
     float count = 10;
-    Motors *motorModule = new Motors();
     while(true) {
         motorModule->motor1PWM(pwmValue, 1);
         pwmValue += count;
-        if(pwmValue >= 50){
+        if(pwmValue >= 50) {
             count = -10;
         }
-        if(pwmValue <= -50){
+        if(pwmValue <= -50) {
             count = 10;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
+}
 
-//    i2c_end();
-    return 0;
+void speedTest() {
+    int16_t speed = 0;
+    int16_t count = 20;
+    while(true) {
+        motorModule->motor1Speed(speed, 1);
+        speed += count;
+        if(speed >= 200) {
+            count = -20;
+        }
+        if(speed <= -200) {
+            count = 20;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    }
 }
 

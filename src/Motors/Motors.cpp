@@ -29,13 +29,8 @@ Motors::Motors(uint8_t _add) {
         return;
     }
     slave_address = 0x10 | _add; // - Direccion por default
-//    for (uint8_t i = 0; i < 15; i++) {
-//      wBuf[i] = 0xFF;
-//    }
 
     bcm_init();
-//    leftMotor = MOTORS_MOTOR2_CONN;
-//    rightMotor = MOTORS_MOTOR1_CONN;
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     motorsControl(MOTORS_STOP,MOTORS_STOP, 1);
 }
@@ -59,7 +54,7 @@ void Motors::selectModule(){
  * Establece el sentido de giro y permite detener el motor A.
  * @param control => 0 --> Stop, 1 --> counter_clockwise, 2 --> clockwise.
  */
-void Motors::motor1Control(uint8_t control, uint8_t force){
+void Motors::motor1Control(uint8_t control, uint8_t force) {
     // selectModule();
     wBuf[0] = (uint8_t) MOTORS_M1_CONTROL; // - Direccion del registro
     wBuf[1] = (uint8_t) control; // - Contenido del registro
@@ -71,14 +66,20 @@ void Motors::motor1Control(uint8_t control, uint8_t force){
  * @param pwm => Valor de PWM en un rango de 0-100, con un digito decimal,
  * con lo que se obtienen 1000 velocidades.
  */
-void Motors::motor1PWM(float pwm, uint8_t force){
-    // selectModule();
-
+void Motors::motor1PWM(float pwm, uint8_t force) {
     realMotor1PWM = constrainPWM(pwm);
 
     wBuf[0] = (uint8_t) MOTORS_M1_PWM;
-    wBuf[1] = (uint8_t)realMotor1PWM;
-    wBuf[2] = (uint8_t)(realMotor1PWM >> 8);
+    wBuf[1] = (uint8_t) realMotor1PWM;
+    wBuf[2] = (uint8_t) (realMotor1PWM >> 8);
+
+    i2cWrite(3, force);
+}
+
+void Motors::motor1Speed(int16_t speed, uint8_t force) {
+    wBuf[0] = (uint8_t) MOTORS_M1_SPEED;
+    wBuf[1] = (uint8_t) speed;
+    wBuf[2] = (uint8_t) (speed >> 8);
 
     i2cWrite(3, force);
 }
@@ -87,8 +88,7 @@ void Motors::motor1PWM(float pwm, uint8_t force){
  * Establece el sentido de giro y permite detener el motor B.
  * @param control => 0 --> Stop, 1 --> counter_clockwise, 2 --> clockwise.
  */
-void Motors::motor2Control(uint8_t control, uint8_t force){
-    // selectModule();
+void Motors::motor2Control(uint8_t control, uint8_t force) {
     wBuf[0] = (uint8_t) MOTORS_M2_CONTROL; // - Direccion del registro
     wBuf[1] = (uint8_t) control; // - Contenido del registro
     i2cWrite(2, force);
@@ -99,9 +99,7 @@ void Motors::motor2Control(uint8_t control, uint8_t force){
  * @param pwm => Valor de PWM en un rango de 0-100, con un digito decimal,
  * con lo que se obtienen 1000 velocidades.
  */
-void Motors::motor2PWM(float pwm, uint8_t force){
-    // selectModule();
-
+void Motors::motor2PWM(float pwm, uint8_t force) {
     realMotor2PWM = constrainPWM(pwm);
 
     wBuf[0] = (uint8_t) MOTORS_M2_PWM;
@@ -111,26 +109,40 @@ void Motors::motor2PWM(float pwm, uint8_t force){
     i2cWrite(3, force);
 }
 
-void Motors::motorsControl(uint8_t m1Control, uint8_t m2Control, uint8_t force){
-    // selectModule();
+void Motors::motor2Speed(int16_t speed, uint8_t force) {
+    wBuf[0] = (uint8_t) MOTORS_M2_SPEED;
+    wBuf[1] = (uint8_t) speed;
+    wBuf[2] = (uint8_t) (speed >> 8);
 
+    i2cWrite(3, force);
+}
+
+void Motors::motorsControl(uint8_t m1Control, uint8_t m2Control, uint8_t force) {
     wBuf[0] = (uint8_t) MOTORS_M1_CONTROL; // - Direccion del registro
     wBuf[1] = (uint8_t) m1Control; // - Contenido del registro
     wBuf[2] = (uint8_t) m2Control; // - Contenido del registro
     i2cWrite(3);
 }
 
-void Motors::motorsPWM(float m1PWM, float m2PWM, uint8_t force){
-    // selectModule();
-
+void Motors::motorsPWM(float m1PWM, float m2PWM, uint8_t force) {
     realMotor1PWM = constrainPWM(m1PWM);
     realMotor2PWM = constrainPWM(m2PWM);
 
     wBuf[0] = (uint8_t) MOTORS_M1_PWM;
-    wBuf[1] = (uint8_t)realMotor1PWM;
-    wBuf[2] = (uint8_t)(realMotor1PWM >> 8);
-    wBuf[3] = (uint8_t)(realMotor2PWM);
-    wBuf[4] = (uint8_t)(realMotor2PWM >> 8);
+    wBuf[1] = (uint8_t) realMotor1PWM;
+    wBuf[2] = (uint8_t) (realMotor1PWM >> 8);
+    wBuf[3] = (uint8_t) (realMotor2PWM);
+    wBuf[4] = (uint8_t) (realMotor2PWM >> 8);
+
+    i2cWrite(5, force);
+}
+
+void Motors::motorsSpeed(int16_t speed1, int16_t speed2, uint8_t force) {
+    wBuf[0] = (uint8_t) MOTORS_M1_SPEED;
+    wBuf[1] = (uint8_t) speed1;
+    wBuf[2] = (uint8_t) (speed1 >> 8);
+    wBuf[3] = (uint8_t) (speed2);
+    wBuf[4] = (uint8_t) (speed2 >> 8);
 
     i2cWrite(5, force);
 }
@@ -186,18 +198,17 @@ void Motors::i2cWrite(uint8_t byteCount, uint8_t force) {
 //    }
 }
 
-void Motors::pause(){
-    std::this_thread::sleep_for(std::chrono::microseconds(3000));
-//    std::this_thread::sleep_for(std::chrono::microseconds(500));
+void Motors::pause() {
+    std::this_thread::sleep_for(std::chrono::microseconds(5000));
 }
 
-int16_t Motors::constrainPWM(float value){
+int16_t Motors::constrainPWM(float value) {
     int16_t roundedValue = (int16_t)std::round(value*10.0f);
     roundedValue = constrain(roundedValue, -MOTORS_MAX_SPEED, MOTORS_MAX_SPEED);
     return roundedValue;
 }
 
-int16_t Motors::constrain(int16_t value, int16_t min, int16_t max){
+int16_t Motors::constrain(int16_t value, int16_t min, int16_t max) {
     if(value > max){
         return max;
     }
@@ -209,11 +220,10 @@ int16_t Motors::constrain(int16_t value, int16_t min, int16_t max){
     return value;
 }
 
-void Motors::bcm_init(){
+void Motors::bcm_init() {
     // - 400kHz aproximadamente...
     uint16_t clk_div = BCM2835_I2C_CLOCK_DIVIDER_2500;
-    // - La direccion del esclavo se establece en cada modulo
-
+    
     if (!bcm2835_init()){
         printf("BCM2835 Error!!...\n");
         exit(1);
@@ -222,21 +232,15 @@ void Motors::bcm_init(){
     bcm2835_i2c_begin();
 
     bcm2835_i2c_setClockDivider(clk_div);
-//    bcm2835_i2c_setSlaveAddress(slave_address);
-//    bcm2835_i2c_write(wBuf, 2);
-//    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-//    bcm2835_i2c_write(wBuf, 2);
-//    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
-void Motors::bcm_end(){
+void Motors::bcm_end() {
     bcm2835_i2c_end();
     bcm2835_close();
 }
 
-void Motors::release(){
+void Motors::release() {
     motorsControl(MOTORS_STOP,MOTORS_STOP, 1);
-//    bcm_end();
     printf("[MotorsModule] => Released\n");
 }
 

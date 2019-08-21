@@ -22,7 +22,6 @@
 #define MOTORS_CLOCKWISE 0x02
 #define MOTORS_COUNTER_CLOCKWISE 0x01
 #define MOTORS_STOP 0x00
-#define MOTORS_MAX_USER_SPEED (int16_t)100
 #define MOTORS_MAX_SPEED (int16_t)1000
 
 // --- Function Registers
@@ -32,11 +31,13 @@
 //#define MOTORS_M1_PWM_BYTE2 0x04 // Address of the upper byte for the PWM of motor 1
 #define MOTORS_M2_PWM 0x05 // Address of the lower byte for the PWM of motor 2
 //#define MOTORS_M2_PWM_BYTE2 0x06 // Address of the upper byte for the PWM of motor 2
+#define MOTORS_M1_SPEED 0x07 // Address of the lower byte for PID (RPM) controller
+// #define MOTORS_M1_SPEED_BYTE2 0x08 // Address of the upper byte for PID (RPM) controller
+#define MOTORS_M2_SPEED 0x09 // Address of the lower byte for PID (RPM) controller
+// #define MOTORS_M2_SPEED_Byte2 0x0A // Address of the upper byte for PID (RPM) controller
 #define MOTORS_STATUS 0x10
 
 #define CRC16 0x8005
-#define masterHeader 'M'
-#define slaveHeader 'M'
 #define frameTail 0xFF
 
 class Motors {
@@ -61,7 +62,12 @@ public:
     void motor2PWM(float pwm, uint8_t force = 0);
     void motorsPWM(float m1PWM, float m2PWM, uint8_t force = 0);
 
+    void motor1Speed(int16_t speed, uint8_t force = 0);
+    void motor2Speed(int16_t speed, uint8_t force = 0);
+    void motorsSpeed(int16_t speed1, int16_t speed2, uint8_t force = 0);
+
     void drivePWM(float m1PWM, float m2PWM, uint8_t force = 0);
+    void driveSpeed(int16_t speed1, int16_t speed2, uint8_t force = 0);
 
     void release();
 private:
