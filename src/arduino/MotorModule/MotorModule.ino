@@ -1,9 +1,9 @@
 #include <Arduino.h>
+#include <Wire.h>
 #include "MotorDriver.h"
 #include "frame_validation.h"
-#include <Wire.h>
 #include "PIDs.h"
-#include <avr/eeprom.h>
+#include "settings.h"
 
 #define SLAVE_ADDRESS 0x10
 // #define REG_MAP_SIZE 0x20
@@ -21,22 +21,11 @@ String command;
 
 int pwm = 100, steps = 100;
 
+settings_type settings;
+
 void setup() {
   Serial.begin(115200);
-  Serial.println("Motors Setup, to execute a function enter the request as follows \"#func,#param1,#param2\" and ENTER");
-  Serial.println("MAKE SURE you connect the motor using the proper pinout\n");
-  Serial.println("1: settings(maxRPM,kp,kd,ki) => maxRPM is maximum RPM output of your motor");
-  Serial.println("2: resetValues()");
-  Serial.println("3: setMotorSpeed(rpmSpeed)");
-  eeprom_read_block((void*)&settings, (void*)0, sizeof(settings));
-  Serial.println(
-    "Settings: \nRPM:" + String(settings.maxRPM, DEC) + "\n" +
-    "cpr:" + String(settings.cpr, DEC) + "\n" +
-    "gear:" + String(settings.gear, DEC) + "\n" +
-    "kp:" + String(settings.kp, DEC) + "\n" +
-    "kd:" + String(settings.kd, DEC) + "\n" +
-    "ki:" + String(settings.ki, DEC) + "\n"
-  );
+  settings = readSettings();
 
   motors.begin();
   // Using pin A2 you can connect up to two motor modules, the default value for
@@ -50,7 +39,7 @@ void setup() {
   Wire.onRequest(statusRequest);
   response[2] = frameTail;
   response[3] = frameTail;
-  pidSetup(&motors);
+  pidSetup(&motors, settings);
   // setMotorSpeed(150, 0);
 }
 
@@ -153,50 +142,6 @@ void statusRequest() {
   }
 }
 
-void updateSettingValues(
-  int maxRPM,
-  int cpr,
-  int gear,
-  float kp,
-  float kd,
-  float ki
-) {
-  settings.maxRPM = maxRPM;
-  settings.cpr = cpr;
-  settings.gear = gear;
-  settings.kp = kp;
-  settings.kd = kd;
-  settings.ki = ki;
-  eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-  Serial.println("Settings Update => Success!");
-}
-
-void resetMemValues() {
-  updateSettingValues(
-    (int) 300,
-    (int) 44,
-    (int) 30,
-    (float) 1,
-    (float) 2,
-    (float) 0.001
-  );
-}
-
 void serialEvent() {
-  if (Serial.available()) {
-    command = Serial.readStringUntil('\n');
-    Serial.println("Input Params: " + command);
-    switch (command[0]) {
-      case '2':
-        resetMemValues();
-        break;
-      case '3':
-        int speed = command.substring(2).toInt();
-        Serial.println("Desired Speed: " + String(speed, DEC));
-        setMotorSpeed(speed, 0);
-        break;
-      default:
-        break;
-    }
-  }
+  readSerial();
 }

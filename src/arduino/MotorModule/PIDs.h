@@ -3,17 +3,9 @@
 #define PIDS
 #include "Arduino.h"
 #include "MotorDriver.h"
+#include "settings.h"
 
-struct settings_t
-{
-  int maxRPM; // Max RPM ouput
-  int cpr; // Encoder steps per revolutions
-  int gear; // Gearbox relation 1:30
-  float kp;
-  float kd;
-  float ki;
-} settings;
-
+settings_type settings;
 MotorDriver *motorsPtr;
 
 uint8_t encoderPins[2][2] = {
@@ -69,7 +61,8 @@ void encInterrupt() {
 volatile uint8_t pidFlag = 0;
 float speedRatio = 0;
 
-void pidSetup(MotorDriver *motors) {
+void pidSetup(MotorDriver *motors, settings_type sett) {
+  settings = sett;
   motorsPtr = motors;
   encoderPins[0][0] = 2;
   encoderPins[1][0] = 3;
