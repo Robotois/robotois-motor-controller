@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <string.h>
 #include "MotorDriver.h"
 #include "frame_validation.h"
 #include "PIDs.h"
@@ -18,14 +19,11 @@ MotorDriver motors;
 
 // String serialLog;
 String command;
-
-int pwm = 100, steps = 100;
-
 settings_type settings;
 
 void setup() {
   Serial.begin(115200);
-  settings = readSettings();
+  readSettings(&settings);
 
   motors.begin();
   // Using pin A2 you can connect up to two motor modules, the default value for
@@ -39,12 +37,10 @@ void setup() {
   Wire.onRequest(statusRequest);
   response[2] = frameTail;
   response[3] = frameTail;
-  pidSetup(&motors, settings);
-  // setMotorSpeed(150, 0);
+  pidSetup(&motors, &settings);
 }
 
 void loop() {
-  // motors.motor1PWM(250);
   pidControl();
 }
 
@@ -134,7 +130,6 @@ void receiveHandler(int byteCount) {
 
 void statusRequest() {
   if (statusCheck) {
-    // Serial.println("StatusRequest");
     Wire.write(response, 2);
     response[0] = 0;
     response[1] = 0;
@@ -143,5 +138,53 @@ void statusRequest() {
 }
 
 void serialEvent() {
-  readSerial();
+  if (Serial.available()) {
+    command = Serial.readStringUntil('\n');
+    Serial.print(F("Input Params: "));
+    Serial.println(command);
+    switch (command[0]) {
+      case '1':
+        getSettingsFromCommand(command.c_str());
+        updateSettings(&settings);
+        break;
+      case '2':
+        resetMemValues(&settings);
+        break;
+      case '3':
+        int speed = command.substring(2).toInt();
+        Serial.print(F("Desired Speed: "));
+        Serial.println(String(speed, DEC));
+        setMotorSpeed(speed, 0);
+        break;
+    }
+  }
 }
+
+void getSettingsFromCommand(char *comm) {
+  int paramCount = 0;
+  char *param = strtok(comm, ",");
+  while(param != NULL) {
+    switch(paramCount) {
+      case 1:
+        settings.maxRPM = String(param).toInt();
+        break;
+      case 2:
+        settings.cpr = String(param).toInt();
+        break;
+      case 3:
+        settings.gear = String(param).toInt();
+        break;
+      case 4:
+        settings.kp = String(param).toFloat();
+        break;
+      case 5:
+        settings.kd = String(param).toFloat();
+        break;
+      case 6:
+        settings.ki = String(param).toFloat();
+        break;
+    }
+    paramCount++;
+    param = strtok(NULL, ",");
+  }
+} 

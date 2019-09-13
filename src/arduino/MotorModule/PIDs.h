@@ -5,7 +5,7 @@
 #include "MotorDriver.h"
 #include "settings.h"
 
-settings_type settings;
+settings_type *settingsPtr;
 MotorDriver *motorsPtr;
 
 uint8_t encoderPins[2][2] = {
@@ -61,14 +61,14 @@ void encInterrupt() {
 volatile uint8_t pidFlag = 0;
 float speedRatio = 0;
 
-void pidSetup(MotorDriver *motors, settings_type sett) {
-  settings = sett;
+void pidSetup(MotorDriver *motors, settings_type *settPtr) {
+  settingsPtr = settPtr;
   motorsPtr = motors;
   encoderPins[0][0] = 2;
   encoderPins[1][0] = 3;
   encoderPins[0][1] = 14;
   encoderPins[1][1] = 15;
-  speedRatio = (float)(settings.cpr * settings.gear) / (6000.0f);
+  speedRatio = (float)(settingsPtr->cpr * settingsPtr->gear) / (6000.0f);
   //set timer2 interrupt at 8kHz
   TCCR2A = 0;// set entire TCCR2A register to 0
   TCCR2B = 0;// same for TCCR2B
@@ -106,9 +106,9 @@ void pidControl() {
     if (pidEnable[idx]) {
       currentError = encTarget[idx] - encCount[idx];
       integral[idx] += currentError;
-      controlPWM = currentError * settings.kp +
-        integral[idx] * settings.ki +
-        (currentError - prevError[idx]) * settings.kd;
+      controlPWM = currentError * settingsPtr->kp +
+        integral[idx] * settingsPtr->ki +
+        (currentError - prevError[idx]) * settingsPtr->kd;
 
       currentPWM[idx] += 0.5*controlPWM;
       currentPWM[idx] = boundValue(currentPWM[idx], -1000, 1000);
@@ -127,7 +127,7 @@ void pidControl() {
 }
 
 void setMotorSpeed(int speed, uint8_t motorIdx) {
-  int boundSpeed = boundValue(speed, -settings.maxRPM, settings.maxRPM);
+  int boundSpeed = boundValue(speed, -settingsPtr->maxRPM, settingsPtr->maxRPM);
   encTarget[motorIdx] = (int) (boundSpeed * speedRatio);
   pidEnable[motorIdx] = true;
   Serial.println("EncTarget: " + String(encTarget[motorIdx], DEC));
